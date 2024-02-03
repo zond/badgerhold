@@ -1,4 +1,4 @@
-module github.com/timshannon/badgerhold/v4
+module github.com/timshannon/badgerhold
 
 require (
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
