@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/dgraph-io/badger/v4"
-	"github.com/timshannon/badgerhold/v4"
+	"github.com/zond/badgerhold"
 )
 
 func TestGet(t *testing.T) {
