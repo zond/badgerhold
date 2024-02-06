@@ -292,6 +292,7 @@ func (q *Query) Or(query *Query) *Query {
 }
 
 // Matches returns whether the provided data matches the query.
+// Will match all field criteria, including nested OR queries, but ignores limits, skips, sort orders, etc.
 func (q *Query) Matches(s *Store, data interface{}) (bool, error) {
 	var key []byte
 	dataVal := reflect.ValueOf(data)
@@ -308,11 +309,15 @@ func (q *Query) Matches(s *Store, data interface{}) (bool, error) {
 			return false, err
 		}
 	}
-	if result, err := q.matchesAllFields(s, key, dataVal, data); result || err != nil {
+	return q.matches(s, key, dataVal, data)
+}
+
+func (q *Query) matches(s *Store, key []byte, value reflect.Value, data interface{}) (bool, error) {
+	if result, err := q.matchesAllFields(s, key, value, data); result || err != nil {
 		return result, err
 	}
 	for _, orQuery := range q.ors {
-		if result, err := orQuery.matchesAllFields(s, key, dataVal, data); result || err != nil {
+		if result, err := orQuery.matches(s, key, value, data); result || err != nil {
 			return result, err
 		}
 	}

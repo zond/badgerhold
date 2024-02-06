@@ -1303,6 +1303,29 @@ type queryMatchTest struct {
 	Created time.Time
 }
 
+func TestComplexQueryMatch(t *testing.T) {
+	testWrap(t, func(store *badgerhold.Store, t *testing.T) {
+		item := queryMatchTest{
+			Key:     1,
+			Age:     2,
+			Color:   "color",
+			Created: time.UnixMicro(0),
+		}
+		query := badgerhold.Where("Key").Eq(1).And("Age").Eq(3).Or(badgerhold.Where("Key").Eq(2).And("Age").Eq(2))
+		if m, err := query.Matches(store, item); m || err != nil {
+			t.Errorf("wanted %+v to not match %+v, but got %v, %v", query, item, m, err)
+		}
+		query = badgerhold.Where("Key").Eq(1).And("Age").Eq(3).Or(badgerhold.Where("Key").Eq(1).And("Age").Eq(2))
+		if m, err := query.Matches(store, item); !m || err != nil {
+			t.Errorf("wanted %+v to match %+v, but got %v, %v", query, item, m, err)
+		}
+		query = badgerhold.Where("Key").Eq(1).And("Age").Eq(1).Or(badgerhold.Where("Key").Eq(2).And("Age").Eq(2).Or(badgerhold.Where("Key").Eq(1).And("Age").Eq(2)))
+		if m, err := query.Matches(store, item); !m || err != nil {
+			t.Errorf("wanted %+v to match %+v, but got %v, %v", query, item, m, err)
+		}
+	})
+}
+
 func TestQueryMatch(t *testing.T) {
 	testWrap(t, func(store *badgerhold.Store, t *testing.T) {
 		item := queryMatchTest{
